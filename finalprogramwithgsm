@@ -1,0 +1,128 @@
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <dht.h>
+#define DHT11_PIN 2
+#define ONE_WIRE_BUS 4
+
+const int lm35_pin = A1;  /* LM35 O/P pin */
+const int airQu_pin = A3;
+const int voltage_pin=A2;
+const int current_pin=A0;
+int sensorValue;
+// Data wire is conntec to the Arduino digital pin 4
+dht DHT;
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire(ONE_WIRE_BUS);
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors(&oneWire);
+float vout = 0.0;
+float vin = 0.0;
+float R1 = 30000.0; //
+float R2 = 7500.0; //
+int value = 0;
+void setup(){
+  Serial.begin(9600); // sets the serial port to 9600
+  sensors.begin(); // Start up the library
+  //Serial.print("| AirQuality(PPM)|");
+  //Serial.print("\t");
+  //Serial.print("| winding Temperature(°C) | ");
+  //Serial.print("\t");
+  /*Serial.print("| Temperature(°C) | ");
+  Serial.print("\t");
+  Serial.print("| Humidity(%) |");
+  Serial.print("\t");
+  Serial.print("\t");
+  Serial.print("| Current (mA)|"); 
+  Serial.print("\t");
+  Serial.print("\t");
+  Serial.print("| OIL TEMP(°C) |");
+  Serial.print("\t");
+  Serial.println("| VOLTAGE(V) |");*/
+ }
+ 
+void loop(){
+ int temp_adc_val;
+  float temp_val;
+  sensorValue = analogRead(airQu_pin); // read analog input pin 0  // Air Quality
+  int chk = DHT.read11(DHT11_PIN); //reading pin 2 for dht11 sensor
+  temp_adc_val = analogRead(lm35_pin);  /* Read Temperature from lm35 sensor */
+  temp_val = (temp_adc_val * 4.88); /* Convert adc value to equivalent voltage */
+  temp_val = (temp_val/10); /* LM35 gives output of 10mv/°C */
+  float averagecurrent = 0;//current 
+  for(int i = 0; i < 1000; i++) {
+  averagecurrent = averagecurrent + (.044 * analogRead(A0) -3.78)  / 1000;
+  delay(1);
+  }
+  //Serial.print("Current="); 
+  //Serial.print("\t");
+ // Serial.println(average); 
+  //delay(3000);
+
+  //DSP
+
+  // Call sensors.requestTemperatures() to issue a global temperature and Requests to all devices on the bus
+  sensors.requestTemperatures(); 
+  
+  //Serial.print("OIL TEMP(°C)");
+  //Serial.print("\t");
+  // Why "byIndex"? You can have more than one IC on the same bus. 0 refers to the first IC on the wire
+ // Serial.println(sensors.getTempCByIndex(0)); 
+
+ // delay(4000);
+
+  //voltage
+  // read the value at analog input
+  value = analogRead(voltage_pin);
+  vout = (value * 5.0) / 1024.0; // see text
+  vin = vout / (R2/(R1+R2));
+
+// Serial.print("voltage= ");
+ //Serial.print("\t");
+ //Serial.println(vin,2);
+ //delay(5000);
+Serial.print("| ");
+ Serial.print(sensorValue, DEC);//AIR
+ Serial.print(" |");
+  Serial.print("\t");
+    Serial.print("\t");
+      Serial.print("\t");
+  Serial.print("| ");
+ Serial.print(temp_val);//LM35TEMPRATURE
+  Serial.print(" |");
+ 
+   Serial.print("\t");
+  Serial.print("\t");
+    Serial.print("\t");
+      Serial.print("\t");
+      Serial.print("| ");
+ Serial.print(DHT.temperature);//TEMPRATURE DHT11
+  Serial.print(" |");
+  Serial.print("\t");
+  
+    
+      Serial.print("| ");
+ Serial.print(DHT.humidity);//HUMIDITY DHT11
+  Serial.print(" |");
+  Serial.print("\t");
+    Serial.print("\t");
+     Serial.print("| ");
+ Serial.print(average); //CURRENT
+  Serial.print(" |");
+  Serial.print("\t");
+    Serial.print("\t");
+    Serial.print("| ");
+      
+ sensors.requestTemperatures(); 
+  
+      
+ Serial.print(sensors.getTempCByIndex(0));
+ Serial.print(" |");//TEMPRATURE OIL DSP18
+ Serial.print("\t");
+ Serial.print("\t");
+ Serial.print("| ");
+ Serial.print(vin,2);//VOLTAGE
+ Serial.println(" |");
+ 
+ delay(100);
+ 
+}
